@@ -1,11 +1,17 @@
 package example
 
+//import org.apache
+
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.ml.classification.NaiveBayesModel
-import org.apache.log4j._
+import org.apache.spark.ml.classification.LogisticRegressionModel
+
+
 import org.apache.spark.ml.feature.Tokenizer
 import org.apache.spark.ml.feature.HashingTF
 import org.apache.spark.ml.feature.IDF
+
+import org.apache.log4j._
 
 object NewsAggregatorDemo {
   
@@ -18,16 +24,22 @@ object NewsAggregatorDemo {
       .getOrCreate()
     
     val testDF = spark.createDataFrame(Seq(
-      (0,"Narendra Modi government finally manages to break the Swiss bank black money vault"),
-      (1,"Aadhaar mandatory for opening bank account, financial transactions of Rs 50000 and above"),
-      (2,"Sensex closes at 3-week low, Nifty below 9600; Lupin, Cipla, Infosys, Wipro top losers"),
-      (3,"HTC U11 Squeezable Smartphone launched in India for Rs 51990"),
-      (4,"Micromax Bharat 2: Over half a million units sold in 50 days, claims company"),
-      (5,"Life on Mars: Elon Musk reveals details of his colonisation vision"),
-      (6,"China's Quantum Satellite Dispatches Transmissions Over a Record Distance of 1200 Kilometres"),
-      (7,"Swine Flu On the Rise; Will There Be Another Epidemic? Home Remedies For Swine Flu"),
-      (8,"Healthy hearts: Olive oil as good as statins in reducing cholesterol levels")
-    )).toDF("id","sentence")
+      (0,"GST won't make border check post disappear, not so soon", 1.0),
+      (1,"Market Live: Sensex holds 150-pt gains, Nifty above 9600; RIL, ITC, HDFC twins lead",1.0),
+      (2,"Baby born on Jet Airways plane gets free air tickets for life",1.0),
+      (3,"UPSC exam tests students on GST, PM Modi's other pet schemes",1.0),
+      (4,"Moto C Plus With 4000mAh Battery to Launch in India Today",2.0),
+      (5,"OnePlus 5 Crosses 5.25 Lakh Registrations in China, TV Ad Outs Phone Ahead of Launch",2.0),
+      (6,"Amazon starts Sale, offers big discounts on iPhone 6, iPhone SE, Moto phones and others",2.0),
+      (7,"Jio Offers 20% More Data Under New Scheme. How To Get It",2.0),
+      (8,"'Cars 3' zooms past 'Wonder Woman' with $53.5 million haul",0.0),
+      (9,"Krushna Abhishek's partner in crime Sudesh Lehri to join him on new show, but Sunil Grover isn't yet confirmed",0.0),
+      (10,"SRK And Suhana Steal The Show As B-Town Celebrities Attend Gauri's Bash",0.0),
+      (11,"Delhi: Newborn declared dead by hospital, found to be alive just before burial",3.0),
+      (12,"Meditation, yoga cut risk of cancer, depression by reversing DNA, says study",3.0),
+      (13,"ACT therapy can relieve depression and anxiety symptoms in chronic pain patients",3.0),
+      (14,"Eczema is likely not associated with an increase in cardiovascular diseases",3.0)
+    )).toDF("id","sentence","actLabels")
     
     val tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words")
     val tokenizedDF = tokenizer.transform(testDF.na.drop())
@@ -46,7 +58,7 @@ object NewsAggregatorDemo {
     val model = NaiveBayesModel.load("target/tmp/newsAggregatorBayesModel")
     val predictions = model.transform(rescaledData)
     
-    predictions.show()
+    predictions.select("sentence","actLabels","prediction").show(false)
     
   }
 }

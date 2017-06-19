@@ -9,9 +9,15 @@ lazy val root = (project in file(".")).
     )),
     name := "Hello",
     libraryDependencies ++= Seq(
+    	commonBeanUtils,
 	    scalaTest % Test,
 	    sparkCore,
-      sparkSQL,
-      sparkML
+      	sparkSQL,
+      	sparkML,
+      	sparkStreaming,
+      	sparkKafka,
+      	cassandraConnector,
+      	kafkaClients,
+      	sparkStreamingKafka
 	  )
   )
