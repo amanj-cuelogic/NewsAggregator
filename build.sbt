@@ -18,6 +18,7 @@ lazy val root = (project in file(".")).
       	sparkKafka,
       	cassandraConnector,
       	kafkaClients,
-      	sparkStreamingKafka
+      	sparkStreamingKafka,
+      	opennlp
 	  )
   )

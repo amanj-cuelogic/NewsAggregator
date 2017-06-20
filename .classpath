@@ -102,6 +102,11 @@
       <attribute name="javadoc_location" value="jar:file:/home/aman/.ivy2/cache/org.spark-project.spark/unused/docs/unused-1.0.0-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
+  <classpathentry sourcepath="/home/aman/.ivy2/cache/org.apache.opennlp/opennlp-tools/srcs/opennlp-tools-1.8.0-sources.jar" kind="lib" path="/home/aman/.ivy2/cache/org.apache.opennlp/opennlp-tools/bundles/opennlp-tools-1.8.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/aman/.ivy2/cache/org.apache.opennlp/opennlp-tools/docs/opennlp-tools-1.8.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
   <classpathentry sourcepath="/home/aman/.ivy2/cache/org.scalatest/scalatest_2.11/srcs/scalatest_2.11-3.0.1-sources.jar" kind="lib" path="/home/aman/.ivy2/cache/org.scalatest/scalatest_2.11/bundles/scalatest_2.11-3.0.1.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:/home/aman/.ivy2/cache/org.scalatest/scalatest_2.11/docs/scalatest_2.11-3.0.1-javadoc.jar!/"/>

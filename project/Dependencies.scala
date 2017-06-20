@@ -11,4 +11,5 @@ object Dependencies {
   lazy val sparkStreamingKafka = "org.apache.spark" % "spark-streaming-kafka-0-10_2.11" % "2.1.1"
   lazy val cassandraConnector = "com.datastax.spark" % "spark-cassandra-connector_2.11" % "2.0.2"
   lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "0.10.2.1"
+  lazy val opennlp = "org.apache.opennlp" % "opennlp-tools" % "1.8.0"
 }

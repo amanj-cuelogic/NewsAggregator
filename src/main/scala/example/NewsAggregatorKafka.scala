@@ -35,7 +35,10 @@ object NewsAggregatorKafka {
       "bootstrap.servers" -> "localhost:9092",
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
-      "group.id" -> "newsAggregator")
+      "group.id" -> "newsAggregator",
+      "connection.max.idle.ms" -> "54000",
+      "retry.backoff.ms" -> "10000"
+    )
 
     val tweets = KafkaUtils
       .createDirectStream[String, String](
@@ -69,7 +72,7 @@ object NewsAggregatorKafka {
       val rescaledData = idfModel.transform(featurizedData)
       //rescaledData.show()
 
-      val model = NaiveBayesModel.load("target/tmp/newsAggregatorBayesModel")
+      val model = LogisticRegressionModel.load("target/tmp/newsAggregatorLRModel")
       val predictions = model.transform(rescaledData)
 
       predictions.select("sentence", "prediction").show(false)
