@@ -19,6 +19,10 @@ import org.apache.log4j._
 import org.apache.spark.streaming._
 import scala.collection.mutable.Map
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.cassandra._
+import com.datastax.spark.connector._
+import com.datastax.spark.connector.cql._
+
 
 object NewsAggregatorKafka {
 
@@ -76,6 +80,13 @@ object NewsAggregatorKafka {
       val predictions = model.transform(rescaledData)
 
       predictions.select("sentence", "prediction").show(false)
+      
+      predictions.select("sentence", "prediction").write
+        .mode("append")
+        .format("org.apache.spark.sql.cassandra")
+        .options(Map("table"->"newsclassification","keyspace" -> "news"))
+        .save()
+
 
     })
 
