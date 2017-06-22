@@ -2,7 +2,7 @@ package example
 
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.ml.feature.{Tokenizer, HashingTF, IndexToString, StringIndexer, RegexTokenizer, IDF}
+import org.apache.spark.ml.feature.{Tokenizer, HashingTF, IndexToString, StringIndexer, RegexTokenizer, IDF, StopWordsRemover}
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 
@@ -43,13 +43,16 @@ object NewsAggregatorLR {
     
     //indexed.show()
     
-    val tokenizer = new RegexTokenizer().setInputCol("TITLE").setOutputCol("words").setPattern("\\W");
+    val tokenizer = new RegexTokenizer().setInputCol("TITLE").setOutputCol("rawWords").setPattern("\\W");
     val tokenizedDF = tokenizer.transform(indexed.na.drop(Array("TITLE")))
     
     //tokenizedDF.show()
     
-    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(20000)
-    val featurizedData = hashingTF.transform(tokenizedDF)
+    val stRemover = new StopWordsRemover().setInputCol("rawWords").setOutputCol("words")
+    val stRemovedDF = stRemover.transform(tokenizedDF)
+    
+    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(60000)
+    val featurizedData = hashingTF.transform(stRemovedDF)
     
     //featurizedData.select("TITLE", "words","rawFeatures").show()
     
@@ -77,13 +80,29 @@ object NewsAggregatorLR {
     
     predictions.select("CATEGORY","label","probability","prediction").show(false)
     
-    val evaluator = new MulticlassClassificationEvaluator()
+    val precisionEvaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+      .setMetricName("weightedPrecision")
+      
+    val accuracyEvaluator = new MulticlassClassificationEvaluator()
       .setLabelCol("label")
       .setPredictionCol("prediction")
       .setMetricName("accuracy")
+    
+    val recallEvaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+      .setMetricName("weightedRecall")
       
-    val accuracy = evaluator.evaluate(predictions)
+    val accuracy = accuracyEvaluator.evaluate(predictions)
     println("Test set accuracy = "+accuracy)
+    
+    val precision = precisionEvaluator.evaluate(predictions)
+    println("Test set Precision = "+precision)
+    
+    val recall = recallEvaluator.evaluate(predictions)
+    println("Test set recall = "+recall)
     
     lrModel.write.overwrite().save("target/tmp/newsAggregatorLRModel")
     

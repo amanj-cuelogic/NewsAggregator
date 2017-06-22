@@ -22,8 +22,10 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.cassandra._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.cql._
-import org.apache.spark.ml.feature.RegexTokenizer
+import org.apache.spark.ml.feature.{RegexTokenizer,StopWordsRemover}
 import org.apache.spark.sql.functions._
+import org.apache.spark.ml.linalg.Vectors
+import scala.collection.immutable.Vector
 
 object NewsAggregatorKafka {
 
@@ -99,13 +101,16 @@ object NewsAggregatorKafka {
 
       val filterednewsDF = newsDF.withColumn("filteredSentence", dataCleaner('sentence))
       
-      val tokenizer = new Tokenizer().setInputCol("filteredSentence").setOutputCol("words")
+      val tokenizer = new Tokenizer().setInputCol("filteredSentence").setOutputCol("rawWords")
       val tokenizedDF = tokenizer.transform(filterednewsDF.na.drop())
 
-      tokenizedDF.show(false)
+      //tokenizedDF.show(false)
+      
+      val stRemover = new StopWordsRemover().setInputCol("rawWords").setOutputCol("words")
+      val stRemovedDF = stRemover.transform(tokenizedDF)
 
-      val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(20000)
-      val featurizedData = hashingTF.transform(tokenizedDF)
+      val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(60000)
+      val featurizedData = hashingTF.transform(stRemovedDF)
 
       val idf = new IDF().setInputCol("rawFeatures").setOutputCol("features")
       val idfModel = idf.fit(featurizedData)
@@ -116,9 +121,22 @@ object NewsAggregatorKafka {
       val model = LogisticRegressionModel.load("target/tmp/newsAggregatorLRModel")
       val predictions = model.transform(rescaledData)
 
-      predictions.select("sentence", "prediction").show(false)
+      //predictions.printSchema()
+      
+//      val calculateProb : (Vector[Double] => Double) = (arg: Vector[Double]) => {
+//          
+//         val prob = arg.reduce((x,y)  => x + y)
+//         prob
+//      }
+//      
+//      val probCalculator = udf(calculateProb)
+      
+      //val refinedPredictions = predictions.withColumn("cummProb", probCalculator('probability))
+      
+      
+      predictions.select("sentence", "probability","prediction").show(false)
 
-      predictions.select("sentence", "prediction").write
+      predictions.select("sentence", "prediction" ,"probability").write
         .mode("append")
         .format("org.apache.spark.sql.cassandra")
         .options(Map("table" -> "newsclassification", "keyspace" -> "news"))
